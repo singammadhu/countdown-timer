@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react"; // Import useCallback
 import "./App.css";
 import Inputtimer from "./Inputtimer";
 import ShowTimer from "./ShowTimer";
@@ -57,31 +57,33 @@ function App() {
     }
   };
 
-  const runTimer = (sec, min, hr) => {
-    if (sec > 0) {
-      setSeconds(sec - 1);
-    } else if (sec === 0 && min > 0) {
-      setMinutes(min - 1);
-      setSeconds(59);
-    } else if (min === 0 && hr > 0) {
-      setHours(hr - 1);
-      setMinutes(59);
-      setSeconds(59);
-    }
+  // Wrap the runTimer function in useCallback
+  const runTimer = useCallback(
+    (sec, min, hr) => {
+      if (sec > 0) {
+        setSeconds(sec - 1);
+      } else if (sec === 0 && min > 0) {
+        setMinutes(min - 1);
+        setSeconds(59);
+      } else if (min === 0 && hr > 0) {
+        setHours(hr - 1);
+        setMinutes(59);
+        setSeconds(59);
+      }
 
-    if (sec === 0 && min === 0 && hr === 0) {
-      handleReset();
-      alert("Timer is finished");
-      clearInterval(timerId);
-    }
-  };
+      if (sec === 0 && min === 0 && hr === 0) {
+        handleReset();
+        alert("Timer is finished");
+        clearInterval(timerId);
+      }
+    },
+    [timerId]
+  ); // Include timerId in the dependency array
 
-  // Include runTimer in the dependencies
   useEffect(() => {
     let tid;
 
     if (isStart && !isPaused) {
-      // Check if timer is started and not paused
       tid = setInterval(() => {
         runTimer(seconds, minutes, hours);
       }, 1000);
@@ -91,7 +93,7 @@ function App() {
     return () => {
       clearInterval(tid);
     };
-  }, [isStart, hours, minutes, seconds, isPaused, runTimer]); // Added runTimer to the dependencies
+  }, [isStart, hours, minutes, seconds, isPaused, runTimer]); // runTimer is now stable
 
   return (
     <div className="App">
